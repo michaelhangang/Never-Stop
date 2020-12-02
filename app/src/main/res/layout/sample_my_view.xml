@@ -8,27 +8,30 @@
         style="@style/Widget.Theme.NeverStop.MyView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="20dp"
-        android:paddingBottom="40dp"
-        app:exampleDimension="24sp"
+        app:exampleDimension="30sp"
         app:exampleDrawable="@android:drawable/ic_menu_add"
-        app:exampleString="Hello, MyView" />
-
-    <TextView
-        android:id="@+id/score"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
+        app:exampleString="0" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="30dp"
-        android:text="Score: "
+        android:layout_marginStart="90dp"
+        android:layout_marginTop="43dp"
+        android:text="@string/score_title"
         android:textColor="@color/common_google_signin_btn_text_dark_default"
         android:textSize="30sp"
         android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="90dp"
+        android:layout_marginTop="13dp"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:textColor="@color/common_google_signin_btn_text_dark_default"
+        android:text="@string/time" />
 
 </FrameLayout>

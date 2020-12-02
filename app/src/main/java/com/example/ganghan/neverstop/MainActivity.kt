@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
 
         //
         myView = findViewById(R.id.myCustomView)
-
+        MyView.handEffect = 2
         // Set up the listener for take photo button
 //        camera_capture_button.setOnClickListener { takePhoto() }
 
@@ -130,12 +130,12 @@ class MainActivity : AppCompatActivity() {
 //                                        myView.x_ = results.getPoseLandmark(PoseLandmark.LEFT_INDEX)!!.position.x
 //                                        myView.y_ = results.getPoseLandmark(PoseLandmark.LEFT_INDEX)!!.position.y
                                     }
-                                    if(leftIndex!=null&&rightIndex!=null){
+
                                     myView.leftIndex = leftIndex
                                     myView.rightIndex = rightIndex
                                     myView.width = 1080F
                                     myView.invalidate()
-                                   }
+
                                  //
 
                                 }
