@@ -1,37 +1,39 @@
 package com.example.ganghan.neverstop
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.graphics.Point
 import android.net.Uri
+import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
-import android.view.MotionEvent
+import android.view.Display
+import android.view.WindowManager
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import java.util.concurrent.Executors
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.pose.PoseDetection
 import com.google.mlkit.vision.pose.PoseDetector
 import com.google.mlkit.vision.pose.PoseLandmark
 import com.google.mlkit.vision.pose.defaults.PoseDetectorOptions
-import com.google.mlkit.vision.text.TextRecognition
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
     private lateinit var myView: MyView
-
+    private  var width= 0
+    private  var height= 0
     private var imageCapture: ImageCapture? = null
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
@@ -45,15 +47,12 @@ class MainActivity : AppCompatActivity() {
             startCamera()
         } else {
             ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+            )
         }
-
-        //
         myView = findViewById(R.id.myCustomView)
-        MyView.handEffect = 2
         // Set up the listener for take photo button
 //        camera_capture_button.setOnClickListener { takePhoto() }
-
         outputDirectory = getOutputDirectory()
 
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -63,6 +62,12 @@ class MainActivity : AppCompatActivity() {
                 .build()
         poseDetector = PoseDetection.getClient(options)
         luminosityAnalyzer = poseAnalyzer()
+        // get the width and height of the screen
+        val display = windowManager.defaultDisplay
+        val size = Point()
+        display.getSize(size)
+        width = size.x
+        height = size.y
     }
 
     private fun takePhoto() {
@@ -71,8 +76,10 @@ class MainActivity : AppCompatActivity() {
         // Create time-stamped output file to hold the image
         val photoFile = File(
             outputDirectory,
-            SimpleDateFormat(FILENAME_FORMAT, Locale.US
-            ).format(System.currentTimeMillis()) + ".jpg")
+            SimpleDateFormat(
+                FILENAME_FORMAT, Locale.US
+            ).format(System.currentTimeMillis()) + ".jpg"
+        )
 
         // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
@@ -80,7 +87,9 @@ class MainActivity : AppCompatActivity() {
         // Set up image capture listener, which is triggered after photo has
         // been taken
         imageCapture.takePicture(
-            outputOptions, ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageSavedCallback {
+            outputOptions,
+            ContextCompat.getMainExecutor(this),
+            object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                 }
@@ -111,40 +120,38 @@ class MainActivity : AppCompatActivity() {
 
             var imageCapture = ImageCapture.Builder().build()
 //   Please replace the width and height of size in setTargetResolution method with your device's width and height
-            val imageAnalyzer = ImageAnalysis.Builder().setTargetResolution( Size(1080, 1920)).setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-                    .also {
-                        it.setAnalyzer(cameraExecutor,ImageAnalysis.Analyzer { imageProxy : ImageProxy->
-                           var image = InputImage.fromMediaImage(imageProxy.image!!, imageProxy.imageInfo.rotationDegrees)
+            //.setTargetResolution(Size(1080, 1920))
+            val imageAnalyzer = ImageAnalysis.Builder().setTargetResolution(Size(width, height))
+                .setBackpressureStrategy(
+                    ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
+                )
+                .build()
+                .also {
+                    it.setAnalyzer(
+                        cameraExecutor,
+                        ImageAnalysis.Analyzer { imageProxy: ImageProxy ->
+                            var image = InputImage.fromMediaImage(
+                                imageProxy.image!!,
+                                imageProxy.imageInfo.rotationDegrees
+                            )
                             // insert your code here.
-                                poseDetector.process(image)
+                            poseDetector.process(image)
                                 .addOnSuccessListener(cameraExecutor) { results ->
-                                var leftWrist = results.getPoseLandmark(PoseLandmark.LEFT_WRIST)
-                                val leftThumb = results.getPoseLandmark(PoseLandmark.LEFT_THUMB)
-                                val left_pink = results.getPoseLandmark(PoseLandmark.LEFT_PINKY)
-                                val leftIndex = results.getPoseLandmark(PoseLandmark.LEFT_INDEX)
-                                val rightIndex = results.getPoseLandmark(PoseLandmark.RIGHT_INDEX)
-
-//
-                                    if (leftIndex !=null &&leftIndex!=null) {
-//                                        myView.x_ = results.getPoseLandmark(PoseLandmark.LEFT_INDEX)!!.position.x
-//                                        myView.y_ = results.getPoseLandmark(PoseLandmark.LEFT_INDEX)!!.position.y
-                                    }
-
+                                    val leftIndex =
+                                        results.getPoseLandmark(PoseLandmark.LEFT_INDEX)
+                                    val rightIndex =
+                                        results.getPoseLandmark(PoseLandmark.RIGHT_INDEX)
                                     myView.leftIndex = leftIndex
                                     myView.rightIndex = rightIndex
-                                    myView.width = 1080F
+                                    myView.width = width.toFloat()
                                     myView.invalidate()
-
-                                 //
-
                                 }
                                 .addOnFailureListener { e ->
                                     Log.i(TAG, e.toString())
                                 }
-                                .addOnCompleteListener{results -> imageProxy.close()}
+                                .addOnCompleteListener { results -> imageProxy.close() }
                         })
-                    }
+                }
             // Select front camera as a default
             val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
             try {
@@ -152,29 +159,19 @@ class MainActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                        this, cameraSelector, preview, imageCapture, imageAnalyzer)
-            } catch(exc: Exception) {
+                    this, cameraSelector, preview, imageCapture, imageAnalyzer
+                )
+            } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(this))
 
     }
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if(MotionEvent.ACTION_DOWN != event?.action) {
-            return false
-        }
-        // used to draw 1 circle
-//       myView.x_ = event.y
-//        myView.y_ = event.x
-        Log.i(TAG,  event.x.toString() + " "+ event.y.toString())
-//        MyView.shapes.add(MyCircle(event.x,event.y))
-        myView.invalidate()
-        return super.onTouchEvent(event)
-    }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
-            baseContext, it) == PackageManager.PERMISSION_GRANTED
+            baseContext, it
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun getOutputDirectory(): File {
@@ -190,14 +187,20 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {
-                Toast.makeText(this,
+                Toast.makeText(
+                    this,
                     "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT).show()
+                    Toast.LENGTH_SHORT
+                ).show()
                 finish()
             }
         }
@@ -212,8 +215,11 @@ class MainActivity : AppCompatActivity() {
     inner  class poseAnalyzer: ImageAnalysis.Analyzer {
         //    @SuppressLint("UnsafeExperimentalUsageError")
         @ExperimentalGetImage
-        override fun analyze(imageProxy: ImageProxy ) {
-            var image = InputImage.fromMediaImage(imageProxy.image!!, imageProxy.imageInfo.rotationDegrees)
+        override fun analyze(imageProxy: ImageProxy) {
+            var image = InputImage.fromMediaImage(
+                imageProxy.image!!,
+                imageProxy.imageInfo.rotationDegrees
+            )
             // insert your code here.
             poseDetector.process(image)
                 .addOnSuccessListener(cameraExecutor) { results ->
@@ -231,7 +237,7 @@ class MainActivity : AppCompatActivity() {
                 .addOnFailureListener { e ->
                     Log.i(TAG, e.toString())
                 }
-                .addOnCompleteListener{results -> imageProxy.close()}
+                .addOnCompleteListener{ results -> imageProxy.close()}
         }
 
     }

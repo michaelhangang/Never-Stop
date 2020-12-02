@@ -2,4 +2,19 @@
     <string name="app_name">Never Stop</string>
     <string name="score_title">Score:</string>
     <string name="time">Time:</string>
+    <string name="timer_toggle">Timer</string>
+    <string name="instructions">Try to get as many golden coins as you can.</string>
+    <string name="duration">length</string>
+    <string name="start">Start</string>
+    <string name="choose_effect">Choose Hand Effect</string>
+    <string-array name="length_array">
+        <item>1 Min</item>
+        <item>2 Mins</item>
+        <item>3 Mins</item>
+        <item>4 Mins</item>
+        <item>5 Mins</item>
+        <item>6 Mins</item>
+        <item>7 Mins</item>
+        <item>8 Mins</item>
+    </string-array>
 </resources>

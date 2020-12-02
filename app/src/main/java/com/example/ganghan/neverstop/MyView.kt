@@ -230,11 +230,6 @@ class MyView : View {
             // Draw the text.
             canvas.drawText(it, 590F, 230F, textPaint)
         }
-//        canvas.drawText(currentCountDown, 590F, 130F, textPaint)
-//        if(showResult)
-//            canvas.drawText("Time is up!", 240F, 730F, whitePaint)
-//        else if(startReady)
-//            canvas.drawText(currentCountDown, 230F, 730F, whitePaint)
         when(flag){
             1->canvas.drawText(currentCountDown, 450F, 730F, readyPaint)
             2-> canvas.drawText(currentCountDown, 590F, 130F, textPaint)
@@ -271,6 +266,5 @@ class MyView : View {
     fun addScore(){
         score +=100
     }
-    fun showResult(canvas: Canvas){
-    }
+
 }
